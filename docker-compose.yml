@@ -1,0 +1,38 @@
+#  docker-compose for DEV!!!
+version: '3.1'
+
+services:
+  web:
+    container_name: parser-web
+    image: nginx:latest
+    ports:
+      - "8088:80"
+    volumes:
+      - ./:/var/www/code
+      - ./.docker/nginx/hosts:/etc/nginx/conf.d
+      - ./.docker/nginx/logs:/var/log/nginx
+  db:
+    container_name: parser-db
+    image: mysql:5.7
+    restart: always
+    ports:
+      - '3388:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=parser
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=secret
+    volumes:
+      - ./.docker/mysql/data:/var/lib/mysql
+      - ./.docker/mysql/conf.d:/etc/mysql/mysql.conf.d
+  php:
+    container_name: parser-php
+    image: php7.4-parser:latest
+    build: .docker/php
+    working_dir: /var/www/code
+    volumes:
+      - ~/.ssh:/root/.ssh
+      - ./:/var/www/code
+    environment:
+      XDEBUG_CONFIG: "remote_host=172.17.0.1 remote_enable=on idekey=PHPSTORM remote_port=9001"
+      PHP_IDE_CONFIG: "serverName=xdebug-parser"
